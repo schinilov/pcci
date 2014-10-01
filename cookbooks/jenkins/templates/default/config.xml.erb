@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<maven2-moduleset plugin="maven-plugin@2.5">
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.6">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url><%= node['jenkins']['master']['project_git_url'] %></url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/master</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <rootModule>
+    <groupId>org.springframework.samples</groupId>
+    <artifactId>spring-petclinic</artifactId>
+  </rootModule>
+  <goals>clean package deploy</goals>
+  <defaultGoals>install</defaultGoals>
+  <aggregatorStyleBuild>true</aggregatorStyleBuild>
+  <incrementalBuild>false</incrementalBuild>
+  <ignoreUpstremChanges>false</ignoreUpstremChanges>
+  <archivingDisabled>false</archivingDisabled>
+  <siteArchivingDisabled>false</siteArchivingDisabled>
+  <fingerprintingDisabled>false</fingerprintingDisabled>
+  <resolveDependencies>false</resolveDependencies>
+  <processPlugins>false</processPlugins>
+  <mavenValidationLevel>-1</mavenValidationLevel>
+  <runHeadless>false</runHeadless>
+  <disableTriggerDownstreamProjects>false</disableTriggerDownstreamProjects>
+  <settings class="jenkins.mvn.DefaultSettingsProvider"/>
+  <globalSettings class="jenkins.mvn.DefaultGlobalSettingsProvider"/>
+  <reporters/>
+  <publishers/>
+  <buildWrappers/>
+  <prebuilders>
+    <hudson.tasks.Shell>
+      <command>sed -i &apos;$d&apos; ./pom.xml
+cat &lt;&lt;EOF &gt;&gt; ./pom.xml
+&lt;distributionManagement&gt;
+  &lt;repository&gt;
+    &lt;id&gt;releases&lt;/id&gt;
+    &lt;url&gt;http://localhost:8081/nexus/content/repositories/releases&lt;/url&gt;
+  &lt;/repository&gt;
+  &lt;snapshotRepository&gt;
+    &lt;id&gt;snapshots&lt;/id&gt;
+    &lt;url&gt;http://localhost:8081/nexus/content/repositories/snapshots&lt;/url&gt;
+  &lt;/snapshotRepository&gt;
+&lt;/distributionManagement&gt;
+&lt;/project&gt;
+EOF
+SHORT_GIT_COMMIT=`git rev-parse --short HEAD`
+echo BUILD_VERSION=$SHORT_GIT_COMMIT&quot;-&quot;${BUILD_NUMBER} &gt; ./env.properties
+#echo BUILD_VERSION=1.0.0-SNAPSHOT &gt; ./env.properties</command>
+    </hudson.tasks.Shell>
+    <EnvInjectBuilder plugin="envinject@1.90">
+      <info>
+        <propertiesFilePath>./env.properties</propertiesFilePath>
+      </info>
+    </EnvInjectBuilder>
+    <hudson.tasks.Maven>
+      <targets>versions:set -DnewVersion=${BUILD_VERSION}</targets>
+      <mavenName>mvn</mavenName>
+      <usePrivateRepository>false</usePrivateRepository>
+      <settings class="jenkins.mvn.DefaultSettingsProvider"/>
+      <globalSettings class="jenkins.mvn.DefaultGlobalSettingsProvider"/>
+    </hudson.tasks.Maven>
+  </prebuilders>
+  <postbuilders/>
+  <runPostStepsIfResult>
+    <name>FAILURE</name>
+    <ordinal>2</ordinal>
+    <color>RED</color>
+    <completeBuild>true</completeBuild>
+  </runPostStepsIfResult>
+</maven2-moduleset>
