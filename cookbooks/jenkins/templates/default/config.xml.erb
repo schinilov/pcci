@@ -65,7 +65,7 @@ cat &lt;&lt;EOF &gt;&gt; ./pom.xml
 &lt;/project&gt;
 EOF
 SHORT_GIT_COMMIT=`git rev-parse --short HEAD`
-echo BUILD_VERSION=$SHORT_GIT_COMMIT&quot;-&quot;${BUILD_NUMBER} &gt; ./env.properties
+echo BUILD_VERSION=$SHORT_GIT_COMMIT&quot;-&quot;${BUILD_NUMBER}&quot;-&quot;SNAPSHOT &gt; ./env.properties
 #echo BUILD_VERSION=1.0.0-SNAPSHOT &gt; ./env.properties</command>
     </hudson.tasks.Shell>
     <EnvInjectBuilder plugin="envinject@1.90">
